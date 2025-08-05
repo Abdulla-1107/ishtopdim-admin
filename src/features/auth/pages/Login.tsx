@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import type { FormProps } from "antd";
 import { Alert, Button, Form, Input } from "antd";
 import { useAuth } from "../service/useAuth";
@@ -14,12 +14,17 @@ const Login: React.FC = () => {
   const dispatch = useDispatch();
   const { login } = useAuth();
   const { isPending, isError } = login;
-  // console.log(error?.response?.data?.message);
+
+  const [showRoleError, setShowRoleError] = useState(false);
 
   const onFinish: FormProps<FieldType>["onFinish"] = (values) => {
     login.mutate(values, {
       onSuccess: (res) => {
-        dispatch(setToken(res.token));
+        if (res.user?.role === "ADMIN") {
+          dispatch(setToken(res.token));
+        } else {
+          setShowRoleError(true);
+        }
       },
     });
   };
@@ -51,10 +56,18 @@ const Login: React.FC = () => {
             <Input.Password />
           </Form.Item>
 
+          {/* Auth error */}
           {isError && (
+            <div className="mb-2">
+              <Alert message={"Phone or password is incorrect"} type="error" />
+            </div>
+          )}
+
+          {/* Role error */}
+          {showRoleError && (
             <div className="mb-4">
               <Alert
-                message={"phone or password is incorrect"}
+                message="Bu tizimga faqat ADMIN foydalanuvchilar kira oladi"
                 type="error"
               />
             </div>
